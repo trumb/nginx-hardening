@@ -1,6 +1,6 @@
 # nginx-hardening
 
-OWASP-hardened nginx security baseline that blocks 16 attack categories. Every blocking rule was derived from **live honeypot data** — real scanners probing a real server within the first 10 minutes of deployment.
+OWASP-hardened nginx security baseline that blocks 19 attack categories. Every blocking rule was derived from **live honeypot data** — real scanners probing a real server, with ongoing updates from continuous honeypot monitoring.
 
 ## Quick Start
 
@@ -35,6 +35,9 @@ sudo nginx -t && sudo systemctl reload nginx
 | 14 | **Admin panels** | Auth bypass | `phpmyadmin`, `adminer`, `solr`, `server-status` |
 | 15 | **CVE probes** | Fingerprinting | `__cve_probe` patterns |
 | 16 | **WP user enum** | Username harvest | `?rest_route=/wp/v2/users` |
+| 17 | **Path traversal** | Arbitrary file read / RCE | `/cgi-bin/.%2e/.%2e/bin/sh` (CVE-2021-41773) |
+| 18 | **Phishing kits** | Hosted phishing detection | `/js/twint_ch.js`, `/js/lkk_ch.js` |
+| 19 | **Backup/bin dirs** | Data theft, shell access | `/backup/`, `/bins/`, `/bin/`, `/dump/`, `/sql/` |
 
 ## Security Headers
 
@@ -94,11 +97,12 @@ When deploying any nginx server:
 
 For public-facing servers, you can also block known scanner User-Agents. See `examples/scanner-ua-blocking.conf`.
 
-This drops connections (nginx 444) from tools like: nuclei, zgrab, masscan, censys, shodan, nmap, nikto, sqlmap, dirbuster, gobuster, ffuf, wfuzz, wpscan, and more.
+This drops connections (nginx 444) from tools like: nuclei, zgrab, masscan, censys, shodan, nmap, nikto, sqlmap, dirbuster, gobuster, ffuf, wfuzz, wpscan, mrtscan, Palo Alto Cortex Xpanse, and more.
 
 Also detects scanner signatures:
 - Truncated Chrome UA (missing `(KHTML, like Gecko) Chrome/xxx`)
-- Ancient Chrome versions (pre-2018)
+- Bare `Mozilla/5.0` with no engine details
+- Ancient Chrome versions (pre-2020)
 - Empty User-Agent
 
 ## Contributing
