@@ -1,19 +1,16 @@
 {
   "log_files": [
-    "/var/log/nginx/claw-access.log"
+    "/var/log/nginx/your-site-access.log"
   ],
   "hardening_conf": "/etc/nginx/snippets/security-hardening.conf",
-  "claw_site_conf": "/etc/nginx/sites-available/claw.pwnship.com",
-  "repo_path": "/home/azureuser/nginx-hardening",
+  "claw_site_conf": "/etc/nginx/sites-available/your-site.example.com",
+  "repo_path": "/home/youruser/nginx-hardening",
   "state_file": "/opt/nginx-hardening/state.json",
   "log_file": "/var/log/nginx-hardening/autoharden.log",
   "honeypot_routes": [
     "/health",
-    "/gateway/",
-    "/gastown/",
-    "/n8n/",
-    "/webhook/",
-    "/orunmila/"
+    "/api/",
+    "/app/"
   ],
   "whitelisted_paths": [
     "/.well-known/acme-challenge/",

@@ -59,7 +59,7 @@ Plus: `server_tokens off` and `autoindex off`.
 ```
 security-hardening.conf              # The main snippet — include in every server block
 autoharden.py                        # Automated log analysis + rule generation (stdlib only)
-config.json                          # Runtime config for autoharden.py
+config.example.json                  # Example config — copy to config.json and customize
 examples/
   hardened-site.conf                  # Full example: hardened site with TLS, CSP, rate limiting
   scanner-ua-blocking.conf            # Optional: drop known scanner User-Agents (444)
@@ -92,7 +92,8 @@ examples/
 # Install
 sudo mkdir -p /opt/nginx-hardening /var/log/nginx-hardening
 sudo cp autoharden.py /opt/nginx-hardening/
-sudo cp config.json /opt/nginx-hardening/
+sudo cp config.example.json /opt/nginx-hardening/config.json
+# Edit /opt/nginx-hardening/config.json with your paths and routes
 
 # Test
 sudo python3 /opt/nginx-hardening/autoharden.py --dry-run
