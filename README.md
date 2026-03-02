@@ -58,10 +58,61 @@ Plus: `server_tokens off` and `autoindex off`.
 
 ```
 security-hardening.conf              # The main snippet — include in every server block
+autoharden.py                        # Automated log analysis + rule generation (stdlib only)
+config.json                          # Runtime config for autoharden.py
 examples/
   hardened-site.conf                  # Full example: hardened site with TLS, CSP, rate limiting
   scanner-ua-blocking.conf            # Optional: drop known scanner User-Agents (444)
 ```
+
+## Auto-Hardener
+
+`autoharden.py` is a Python script (stdlib only, no pip) that automatically analyzes nginx honeypot logs, detects new attack patterns, and generates blocking rules. It runs daily via a systemd timer.
+
+### What It Does
+
+1. **Parses honeypot logs** — reads `/var/log/nginx/claw-access.log` (tracks offset to only process new entries)
+2. **Detects patterns** — paths returning 200 that aren't known routes, new scanner User-Agents appearing 3+ times, suspicious paths with attack markers
+3. **Generates rules** — appends `location` blocks to `security-hardening.conf` and UA patterns to the site config
+4. **Validates** — runs `nginx -t` before reloading; rolls back `.bak` on failure
+5. **Syncs** — commits and pushes new rules to this repo
+
+### Safety Guarantees
+
+- **Additive only** — never removes existing rules
+- **Max 10 new rules per run** — prevents runaway
+- **Backup before edit** — `.bak` files created before any config change
+- **`nginx -t` validation** — rollback on syntax failure
+- **Whitelisted paths** — `/health`, `/favicon.ico`, `/.well-known/acme-challenge/`, all honeypot routes
+- **`--dry-run` flag** — preview changes without applying
+
+### Setup
+
+```bash
+# Install
+sudo mkdir -p /opt/nginx-hardening /var/log/nginx-hardening
+sudo cp autoharden.py /opt/nginx-hardening/
+sudo cp config.json /opt/nginx-hardening/
+
+# Test
+sudo python3 /opt/nginx-hardening/autoharden.py --dry-run
+
+# Enable daily timer
+sudo python3 /opt/nginx-hardening/autoharden.py --enable-timer
+```
+
+### Configuration — `config.json`
+
+| Key | Description |
+|-----|-------------|
+| `log_files` | Nginx log files to parse (default: `claw-access.log`) |
+| `hardening_conf` | Path to `security-hardening.conf` snippet |
+| `claw_site_conf` | Path to the site-specific nginx config |
+| `honeypot_routes` | Known good routes (won't trigger path rules) |
+| `whitelisted_paths` | Paths to never block |
+| `whitelisted_ua_patterns` | UA strings to never block |
+| `min_occurrences` | Minimum hits before generating a rule (default: 3) |
+| `max_rules_per_run` | Cap on new rules per execution (default: 10) |
 
 ## Full Hardened Server Checklist
 
